@@ -1,4 +1,4 @@
-# Mock Servisler (Kişi 4)
+# Mock Servisler
 
 Kurulum: `npm install`
 Hepsini çalıştır: `npm run all`  (tek tek: `npm run auth|club-event|registration|live-ws`)
