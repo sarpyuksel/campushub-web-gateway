@@ -1,45 +1,51 @@
 import { pathToFileURL } from 'node:url';
 import { createApp, start, getUser } from '../shared/common.js';
-import { events as seed } from '../shared/seed.js';
+import { events, initialRegistered } from '../shared/seed.js';
 
 export function build() {
-  const app = createApp('registration-mock');
-  const events = seed.map((e) => ({ ...e }));
-  const registrations = [];
+  const app = createApp('registration-service');
+  const counts = { ...initialRegistered }; // etkinlik id -> kayıtlı sayısı
+  const registrations = []; // RegistrationResponse[]
 
-  const auth = (req, reply) => {
-    const p = getUser(req);
-    if (!p) reply.code(401).send({ error: 'unauthorized', message: 'Geçersiz token' });
-    return p;
-  };
+  const unauthorized = (reply) => reply.code(401).send({ error: 'UNAUTHORIZED', message: 'Geçersiz veya eksik token' });
 
+  // POST /registrations { userId, eventId } -> RegistrationResponse
   app.post('/registrations', async (req, reply) => {
-    const p = auth(req, reply); if (!p) return;
-    const { eventId } = req.body || {};
+    if (!getUser(req)) return unauthorized(reply);
+    const userId = Number(req.body?.userId);
+    const eventId = Number(req.body?.eventId);
+    if (!userId || !eventId) return reply.code(400).send({ error: 'VALIDATION_ERROR', message: 'userId ve eventId gerekli' });
     const ev = events.find((e) => e.id === eventId);
-    if (!ev) return reply.code(404).send({ error: 'not_found', message: 'Etkinlik bulunamadı' });
-    if (registrations.some((r) => r.userId === p.sub && r.eventId === eventId))
-      return reply.code(409).send({ error: 'already_registered', message: 'Zaten kayıtlısın' });
-    if (ev.registered >= ev.capacity)
-      return reply.code(409).send({ error: 'event_full', message: 'Kontenjan dolu' });
-    ev.registered++;
-    const reg = { id: `r${registrations.length + 1}`, userId: p.sub, eventId, status: 'confirmed', createdAt: new Date().toISOString() };
+    if (!ev) return reply.code(404).send({ error: 'EVENT_NOT_FOUND', message: 'Etkinlik bulunamadı' });
+    if (registrations.some((r) => r.userId === userId && r.eventId === eventId && r.status === 'REGISTERED'))
+      return reply.code(409).send({ error: 'ALREADY_REGISTERED', message: 'Bu etkinliğe zaten kayıtlısın' });
+    if ((counts[eventId] ?? 0) >= ev.capacity)
+      return reply.code(409).send({ error: 'EVENT_FULL', message: 'Etkinlik kontenjanı dolu' });
+    counts[eventId] = (counts[eventId] ?? 0) + 1;
+    const reg = { registrationId: registrations.length + 1, userId, eventId, status: 'REGISTERED' };
     registrations.push(reg);
     return reply.code(201).send(reg);
   });
 
+  // GET /registrations?userId=1  veya  GET /registrations/me  -> RegistrationResponse[]
+  app.get('/registrations', async (req, reply) => {
+    if (!getUser(req)) return unauthorized(reply);
+    const { userId, eventId } = req.query;
+    return registrations.filter((r) => (!userId || r.userId === Number(userId)) && (!eventId || r.eventId === Number(eventId)));
+  });
   app.get('/registrations/me', async (req, reply) => {
-    const p = auth(req, reply); if (!p) return;
+    const p = getUser(req);
+    if (!p) return unauthorized(reply);
     return registrations.filter((r) => r.userId === p.sub);
   });
 
+  // DELETE /registrations/:id -> RegistrationResponse (status: CANCELLED)
   app.delete('/registrations/:id', async (req, reply) => {
-    const p = auth(req, reply); if (!p) return;
-    const i = registrations.findIndex((r) => r.id === req.params.id && r.userId === p.sub);
-    if (i < 0) return reply.code(404).send({ error: 'not_found', message: 'Kayıt bulunamadı' });
-    const [reg] = registrations.splice(i, 1);
-    events.find((e) => e.id === reg.eventId).registered--;
-    return reply.code(204).send();
+    if (!getUser(req)) return unauthorized(reply);
+    const reg = registrations.find((r) => r.registrationId === Number(req.params.id));
+    if (!reg) return reply.code(404).send({ error: 'REGISTRATION_NOT_FOUND', message: 'Kayıt bulunamadı' });
+    if (reg.status === 'REGISTERED') { reg.status = 'CANCELLED'; counts[reg.eventId]--; }
+    return reg;
   });
   return app;
 }

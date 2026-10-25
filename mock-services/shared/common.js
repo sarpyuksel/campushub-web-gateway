@@ -43,9 +43,9 @@ export function createApp(name) {
     if (mode === 'none') return;
     if (mode === 'timeout') return new Promise(() => {});
     const code = mode === 'down' ? 503 : Number(mode) || 500;
-    return reply.code(code).send({ error: 'simulated_error', message: `${name} simulated ${mode}` });
+    return reply.code(code).send({ error: code === 503 ? 'SERVICE_UNAVAILABLE' : 'INTERNAL_ERROR', message: `${name} simulated ${mode}` });
   });
-  app.get('/health', async () => ({ status: 'ok', service: name }));
+  app.get('/health', async () => ({ service: name, status: 'UP', version: '1.0.0' }));
   return app;
 }
 
