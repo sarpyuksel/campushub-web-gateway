@@ -1,0 +1,18 @@
+{
+  "name": "campushub-mocks",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "auth": "node auth/server.js",
+    "club-event": "node club-event/server.js",
+    "registration": "node registration/server.js",
+    "live-ws": "node live-ws/server.js",
+    "all": "node start-all.js",
+    "test": "node --test test/mocks.test.js"
+  },
+  "dependencies": {
+    "fastify": "^4.28.1",
+    "ws": "^8.18.0"
+  }
+}
