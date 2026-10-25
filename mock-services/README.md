@@ -4,7 +4,7 @@
 - Hepsini çalıştır: `npm run all` (tek tek: `npm run auth`, `club-event`, `registration`, `live-ws`)
 - Test: `npm test`
 
-Yanıt biçimleri `shared/types/index.ts` ile birebir aynıdır.
+Yanıt biçimleri `shared/types/index.ts` ile uyumludur.
 
 | Servis | Port | Uç noktalar |
 |---|---|---|
