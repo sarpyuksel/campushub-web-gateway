@@ -1,0 +1,13 @@
+# Varsayılan sahip
+*                       @sarpyuksel
+
+/gateway/               @sarpyuksel
+/shared/types/          @sarpyuksel
+/.github/               @sarpyuksel
+
+/docker-compose.yml     @zekioz0
+/gateway/Dockerfile     @zekioz0
+/frontend/Dockerfile    @zekioz0
+
+/frontend/              @umut-zeybek
+/mock-services/         @atlykrdg 
