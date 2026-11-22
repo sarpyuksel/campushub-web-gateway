@@ -5,7 +5,7 @@ import { config } from './config';
 import { registerGatewayRoutes } from './routes/gatewayRoutes';
 import { HealthResponse } from '../../shared/types';
 
-async function main() {
+async function start() {
   const app = Fastify({ logger: true });
 
   await app.register(cors, { origin: true });
@@ -13,21 +13,19 @@ async function main() {
 
   app.get('/health', async (): Promise<HealthResponse> => {
     return {
-      service: 'api-gateway',
       status: 'UP',
+      service: 'api-gateway',
       version: '1.0.0',
     };
   });
 
   await registerGatewayRoutes(app);
 
-  try {
-    await app.listen({ port: config.port, host: '0.0.0.0' });
-    console.log(`API Gateway http://localhost:${config.port} adresinde çalışıyor.`);
-  } catch (err) {
-    app.log.error(err);
-    process.exit(1);
-  }
+  await app.listen({ port: config.port, host: '0.0.0.0' });
+  console.log(`Gateway ayakta: http://localhost:${config.port}/health`);
 }
 
-main();
+start().catch((err) => {
+  console.error('Gateway başlatılamadı:', err);
+  process.exit(1);
+});
