@@ -11,10 +11,10 @@ export const config = {
   jwtSecret,
   requestTimeoutMs: Number(process.env.REQUEST_TIMEOUT_MS) || 5000,
   services: {
-    auth: process.env.AUTH_URL || 'http://localhost:8001',
-    clubEvent: process.env.EVENT_URL || 'http://localhost:8002',
-    registration: process.env.REGISTRATION_URL || 'http://localhost:8003',
-    ai: process.env.AI_URL || 'http://localhost:8004',
-    liveData: process.env.LIVE_DATA_URL || 'http://localhost:8005',
+    auth: process.env.AUTH_URL || 'http://localhost:4001',
+    clubEvent: process.env.EVENT_URL || 'http://localhost:4002',
+    registration: process.env.REGISTRATION_URL || 'http://localhost:4003',
+    ai: process.env.AI_URL || 'http://localhost:4005',
+    liveData: process.env.LIVE_DATA_URL || 'http://localhost:4004',
   },
 };
