@@ -9,7 +9,7 @@ function getAuthHeaders(req: FastifyRequest): Record<string, string> {
 }
 
 export async function registerGatewayRoutes(app: FastifyInstance) {
-  // Auth Rotalari (mock-services/auth -> /register, /login, /me, /users/:id)
+  // Auth Rotalari
   app.post('/api/auth/register', async (req, reply) => {
     const res = await forwardRequest(config.services.auth, '/register', 'POST', req.body);
     return reply.status(res.status).send(res.data);
